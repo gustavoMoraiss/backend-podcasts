@@ -14,7 +14,8 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mongoose": "^8.3.1",
-    "tsconfig-paths": "^4.2.0"
+    "tsconfig-paths": "^4.2.0",
+    "yup": "^1.4.0"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
