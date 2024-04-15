@@ -1,5 +1,7 @@
 import { CreateUser } from "#/@types/user";
+import emailVerificationToken from "#/models/emailVerificationToken";
 import User from "#/models/user";
+import { generateToken } from "#/utils/helper";
 import { CreateuserSchema } from "#/utils/validationSchema";
 import { MAILTRAP_PASSWORD, MAILTRAP_USER } from "#/utils/variables";
 import { RequestHandler } from "express";
@@ -19,10 +21,16 @@ export const createUser: RequestHandler = async (req: CreateUser, res) => {
         }
     });
 
+    const token = generateToken()
+    const verificationToken = await emailVerificationToken.create({
+        owner: (await user)._id,
+        token
+    });
+
     transport.sendMail({
         to: (await user)?.email,
         from: "auth@podify.com",
-        html: "<h1>chambraaaaa</h1>"
+        html: `<h1>Your verification token is: ${token}</h1>`
     });
 
     res.status(201).json(user);
