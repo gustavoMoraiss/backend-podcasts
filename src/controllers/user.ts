@@ -10,6 +10,7 @@ export const createUser: RequestHandler = async (req: CreateUser, res) => {
     const user = User.create({ name, email, password });
 
     const token = generateToken()
+
     sendVerificationMail(token, { name, email, userId: (await user)._id.toString() })
 
     res.status(201).json({ user: { id: (await user)._id, name, email } });
