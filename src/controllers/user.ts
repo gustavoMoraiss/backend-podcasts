@@ -10,6 +10,7 @@ import { RequestHandler } from "express";
 import { isValidObjectId } from "mongoose";
 import crypto from 'crypto';
 import { PASSWORD_RESET_LINK } from "#/utils/variables";
+import user from "#/models/user";
 
 export const create: RequestHandler = async (req: CreateUserRequest, res) => {
     const { email, password, name } = req.body;
@@ -102,4 +103,20 @@ export const generateForgetPasswordLink: RequestHandler = async (req, res) => {
     sendVerificationPasswordLink({ email: user.email, link: resetLink });
 
     res.json({ message: "Check you registered mail." });
+};
+
+export const isValidPassResetToken: RequestHandler = async (req, res) => {
+    const { token, userId } = req.body;
+
+    const resetToken = await PasswordResetToken.findOne({ owner: userId })
+    if (!resetToken) return res.status(403).json({
+        error: "Unauthorized access, invalid token."
+    })
+
+    const matched = await resetToken?.compareToken(token)
+    if (!matched) return res.status(403).json({
+        error: "Unauthorized access, invalid token."
+    })
+
+    res.json({ message: "Your token is valid." });
 };
