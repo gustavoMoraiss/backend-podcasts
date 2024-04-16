@@ -1,6 +1,5 @@
 import { CreateUserRequest, VerifyEmailRequest } from "#/@types/user";
 import EmailVerificationToken from "#/models/emailVerificationToken";
-import passwordResetToken from "#/models/passwordResetToken";
 import PasswordResetToken from "#/models/passwordResetToken";
 import User from "#/models/user";
 import { generateToken } from "#/utils/helper";
@@ -105,18 +104,7 @@ export const generateForgetPasswordLink: RequestHandler = async (req, res) => {
     res.json({ message: "Check you registered mail." });
 };
 
-export const isValidPassResetToken: RequestHandler = async (req, res) => {
-    const { token, userId } = req.body;
+export const grantValid: RequestHandler = async (req, res) => {
 
-    const resetToken = await PasswordResetToken.findOne({ owner: userId })
-    if (!resetToken) return res.status(403).json({
-        error: "Unauthorized access, invalid token."
-    })
-
-    const matched = await resetToken?.compareToken(token)
-    if (!matched) return res.status(403).json({
-        error: "Unauthorized access, invalid token."
-    })
-
-    res.json({ message: "Your token is valid." });
+    res.json({ valid: true });
 };
