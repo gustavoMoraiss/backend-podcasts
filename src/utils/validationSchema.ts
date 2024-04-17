@@ -30,5 +30,10 @@ export const UpdatePasswordSchema = yup.object().shape({
     ).required("Invalid userId.")
 });
 
+export const EmailValidationSchema = yup.object().shape({
+    email: yup.string().required("Email is missing or blank.").email("invalid email ID."),
+    password: yup.string().trim().required("Password is missing or blank")
+});
+
 
 
