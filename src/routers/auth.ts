@@ -46,9 +46,14 @@ authRouter.post(
 );
 authRouter.post("/sign-in", validate(EmailValidationSchema), signIn);
 authRouter.post("/is-auth", mustAuth, signIn);
-authRouter.post("/update-profile", fileParser, (req: RequestWithFiles, res) => {
-  console.log(req.files);
-  res.json({ ok: true });
-});
+authRouter.post(
+  "/update-profile",
+  mustAuth,
+  fileParser,
+  (req: RequestWithFiles, res) => {
+    console.log(req.files);
+    res.json({ ok: true });
+  }
+);
 
 export default authRouter;
