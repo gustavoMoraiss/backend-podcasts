@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.signIn = exports.updatePassword = exports.grantValid = exports.generateForgetPasswordLink = exports.sendReverificationToken = exports.verifyEmail = exports.create = void 0;
+exports.updateProfile = exports.signIn = exports.updatePassword = exports.grantValid = exports.generateForgetPasswordLink = exports.sendReverificationToken = exports.verifyEmail = exports.create = void 0;
 const emailVerificationToken_1 = __importDefault(require("../models/emailVerificationToken"));
 const passwordResetToken_1 = __importDefault(require("../models/passwordResetToken"));
 const user_1 = __importDefault(require("../models/user"));
@@ -22,22 +22,27 @@ const mongoose_1 = require("mongoose");
 const crypto_1 = __importDefault(require("crypto"));
 const variables_1 = require("../utils/variables");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const cloud_1 = __importDefault(require("../cloud"));
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password, name } = req.body;
     const user = user_1.default.create({ name, email, password });
     const token = (0, helper_1.generateToken)();
     yield emailVerificationToken_1.default.create({
         owner: (yield user)._id,
-        token
+        token,
     });
-    (0, mail_1.sendVerificationMail)(token, { name, email, userId: (yield user)._id.toString() });
+    (0, mail_1.sendVerificationMail)(token, {
+        name,
+        email,
+        userId: (yield user)._id.toString(),
+    });
     res.status(201).json({ user: { id: (yield user)._id, name, email } });
 });
 exports.create = create;
 const verifyEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { token, userId } = req.body;
     const verificationToken = yield emailVerificationToken_1.default.findOne({
-        owner: userId
+        owner: userId,
     });
     if (!verificationToken)
         return res.status(403).json({ error: "Invalid token." });
@@ -45,7 +50,7 @@ const verifyEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     if (!matched)
         return res.status(403).json({ error: "Invalid token." });
     yield user_1.default.findByIdAndUpdate(userId, {
-        verified: true
+        verified: true,
     });
     yield emailVerificationToken_1.default.findByIdAndDelete(verificationToken._id);
     res.json({ message: "Your email is verified." });
@@ -60,17 +65,17 @@ const sendReverificationToken = (req, res) => __awaiter(void 0, void 0, void 0, 
     if (!user)
         res.status(403).json({ error: "Invalid request." });
     yield emailVerificationToken_1.default.findOneAndDelete({
-        owner: userId
+        owner: userId,
     });
     const token = (0, helper_1.generateToken)();
     yield emailVerificationToken_1.default.create({
         owner: userId,
-        token
+        token,
     });
     (0, mail_1.sendVerificationMail)(token, {
         name: (_a = user === null || user === void 0 ? void 0 : user.name) !== null && _a !== void 0 ? _a : "",
         email: (_b = user === null || user === void 0 ? void 0 : user.email) !== null && _b !== void 0 ? _b : "",
-        userId: (_c = user === null || user === void 0 ? void 0 : user._id.toString()) !== null && _c !== void 0 ? _c : ""
+        userId: (_c = user === null || user === void 0 ? void 0 : user._id.toString()) !== null && _c !== void 0 ? _c : "",
     });
     res.json({ message: "Please, check your mail." });
 });
@@ -102,17 +107,17 @@ const updatePassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
     const user = yield user_1.default.findById(userId);
     if (!user)
         return res.status(403).json({
-            error: "Unauthorized access."
+            error: "Unauthorized access.",
         });
     const matched = yield user.comparePassword(password);
     if (matched)
         return res.status(422).json({
-            error: "The new password must be different."
+            error: "The new password must be different.",
         });
     user.password = password;
     yield user.save();
     yield passwordResetToken_1.default.findOneAndDelete({
-        owner: user._id
+        owner: user._id,
     });
     (0, mail_1.sendPassResetSuccessEmail)(user.name, user.email);
     res.json({ message: "Password resets successfully." });
@@ -122,7 +127,7 @@ const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _d;
     const { password, email } = req.body;
     const user = yield user_1.default.findOne({
-        email
+        email,
     });
     if (!user)
         return res.status(403).json({ error: "Email/ Password mismatch." });
@@ -140,9 +145,35 @@ const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             verified: user.verified,
             avatar: (_d = user.avatar) === null || _d === void 0 ? void 0 : _d.url,
             followers: user.followers.length,
-            followings: user.followings.length
+            followings: user.followings.length,
         },
-        token
+        token,
     });
 });
 exports.signIn = signIn;
+const updateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _e, _f, _g;
+    const { name } = req.body;
+    const avatar = (_e = req.files) === null || _e === void 0 ? void 0 : _e.avatar;
+    const user = yield user_1.default.findById(req.user.id);
+    if (!user)
+        throw new Error("something went worng, user not found!");
+    if (typeof name !== "string" || name.trim().length < 3)
+        return res.status(422).json({ error: "Invalid name!" });
+    user.name = name;
+    if (avatar) {
+        if ((_f = user.avatar) === null || _f === void 0 ? void 0 : _f.publicId) {
+            yield cloud_1.default.uploader.destroy((_g = user.avatar) === null || _g === void 0 ? void 0 : _g.publicId);
+        }
+        const { secure_url, public_id } = yield cloud_1.default.uploader.upload(avatar.filepath, {
+            width: 300,
+            height: 300,
+            crop: "thomb",
+            gravity: "face",
+        });
+        user.avatar = { url: secure_url, publicId: public_id };
+    }
+    yield user.save();
+    res.json({ avatar: user.avatar });
+});
+exports.updateProfile = updateProfile;

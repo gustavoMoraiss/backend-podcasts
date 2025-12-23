@@ -2,7 +2,7 @@ import { CreateUserRequest, VerifyEmailRequest } from "#/@types/user";
 import EmailVerificationToken from "#/models/emailVerificationToken";
 import PasswordResetToken from "#/models/passwordResetToken";
 import User from "#/models/user";
-import { generateToken } from "#/utils/helper";
+import { formatProfile, generateToken } from "#/utils/helper";
 import {
   sendVerificationMail,
   sendVerificationPasswordLink,
@@ -182,6 +182,12 @@ export const signIn: RequestHandler = async (req, res) => {
   });
 };
 
+export const sendProfile: RequestHandler = async (req, res) => {
+  res.json({
+    profile: req.user,
+  });
+};
+
 export const updateProfile: RequestHandler = async (
   req: RequestWithFiles,
   res
@@ -198,6 +204,9 @@ export const updateProfile: RequestHandler = async (
   user.name = name;
 
   if (avatar) {
+    if (user.avatar?.publicId) {
+      await cloudinary.uploader.destroy(user.avatar?.publicId);
+    }
     const { secure_url, public_id } = await cloudinary.uploader.upload(
       avatar.filepath,
       {
@@ -211,5 +220,5 @@ export const updateProfile: RequestHandler = async (
     user.avatar = { url: secure_url, publicId: public_id };
   }
   await user.save();
-  res.json({ avatar: user.avatar });
+  res.json({ profile: formatProfile(user) });
 };

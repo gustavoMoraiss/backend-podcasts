@@ -6,6 +6,8 @@ import {
   grantValid,
   updatePassword,
   signIn,
+  updateProfile,
+  sendProfile,
 } from "#/controllers/user";
 import { isValidPassResetToken, mustAuth } from "#/middleware/auth";
 import { validate } from "#/middleware/validator";
@@ -15,11 +17,7 @@ import {
   UpdatePasswordSchema,
   EmailValidationSchema,
 } from "#/utils/validationSchema";
-import { error } from "console";
 import { Router } from "express";
-import formidable from "formidable";
-import path from "path";
-import fs from "fs";
 import fileParser, { RequestWithFiles } from "#/middleware/fileParser";
 
 const authRouter = Router();
@@ -45,15 +43,7 @@ authRouter.post(
   updatePassword
 );
 authRouter.post("/sign-in", validate(EmailValidationSchema), signIn);
-authRouter.post("/is-auth", mustAuth, signIn);
-authRouter.post(
-  "/update-profile",
-  mustAuth,
-  fileParser,
-  (req: RequestWithFiles, res) => {
-    console.log(req.files);
-    res.json({ ok: true });
-  }
-);
+authRouter.get("/is-auth", mustAuth, sendProfile);
+authRouter.post("/update-profile", mustAuth, fileParser, updateProfile);
 
 export default authRouter;

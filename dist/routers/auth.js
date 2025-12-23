@@ -18,8 +18,5 @@ authRouter.post("/verify-pass-reset-token", (0, validator_1.validate)(validation
 authRouter.post("/update-password", (0, validator_1.validate)(validationSchema_1.UpdatePasswordSchema), auth_1.isValidPassResetToken, user_1.updatePassword);
 authRouter.post("/sign-in", (0, validator_1.validate)(validationSchema_1.EmailValidationSchema), user_1.signIn);
 authRouter.post("/is-auth", auth_1.mustAuth, user_1.signIn);
-authRouter.post("/update-profile", fileParser_1.default, (req, res) => {
-    console.log(req.files);
-    res.json({ ok: true });
-});
+authRouter.post("/update-profile", auth_1.mustAuth, fileParser_1.default, user_1.updateProfile);
 exports.default = authRouter;
