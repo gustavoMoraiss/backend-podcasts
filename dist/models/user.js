@@ -15,13 +15,13 @@ const userSchema = new mongoose_1.Schema({
     name: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
     },
     email: {
         type: String,
         required: true,
         trim: true,
-        unique: true
+        unique: true,
     },
     password: {
         type: String,
@@ -34,25 +34,31 @@ const userSchema = new mongoose_1.Schema({
     },
     verified: {
         type: Boolean,
-        default: false
+        default: false,
     },
-    favorites: [{
+    favorites: [
+        {
             type: mongoose_1.Schema.Types.ObjectId,
-            ref: "Audio"
-        }],
-    followers: [{
+            ref: "Audio",
+        },
+    ],
+    followers: [
+        {
             type: mongoose_1.Schema.Types.ObjectId,
-            ref: "User"
-        }],
-    followings: [{
+            ref: "User",
+        },
+    ],
+    followings: [
+        {
             type: mongoose_1.Schema.Types.ObjectId,
-            ref: "User"
-        }],
-    tokens: [String]
+            ref: "User",
+        },
+    ],
+    tokens: [String],
 }, { timestamps: true });
-userSchema.pre('save', function (next) {
+userSchema.pre("save", function (next) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (this.isModified('password')) {
+        if (this.isModified("password")) {
             this.password = yield (0, bcrypt_1.hash)(this.password, 10);
         }
         next();

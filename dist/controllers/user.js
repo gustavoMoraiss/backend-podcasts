@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateProfile = exports.signIn = exports.updatePassword = exports.grantValid = exports.generateForgetPasswordLink = exports.sendReverificationToken = exports.verifyEmail = exports.create = void 0;
+exports.updateProfile = exports.logout = exports.sendProfile = exports.signIn = exports.updatePassword = exports.grantValid = exports.generateForgetPasswordLink = exports.sendReverificationToken = exports.verifyEmail = exports.create = void 0;
 const emailVerificationToken_1 = __importDefault(require("../models/emailVerificationToken"));
 const passwordResetToken_1 = __importDefault(require("../models/passwordResetToken"));
 const user_1 = __importDefault(require("../models/user"));
@@ -151,6 +151,26 @@ const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     });
 });
 exports.signIn = signIn;
+const sendProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.json({
+        profile: req.user,
+    });
+});
+exports.sendProfile = sendProfile;
+const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { fromAll } = req.query;
+    const token = req.token;
+    const user = yield user_1.default.findById(req.user.id);
+    if (!user)
+        throw new Error("something went worng, user not found.");
+    if (fromAll === "yes")
+        user.tokens = [];
+    else
+        user.tokens = user.tokens.filter((t) => t !== token);
+    yield user.save();
+    res.json({ success: true });
+});
+exports.logout = logout;
 const updateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _e, _f, _g;
     const { name } = req.body;
@@ -174,6 +194,6 @@ const updateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         user.avatar = { url: secure_url, publicId: public_id };
     }
     yield user.save();
-    res.json({ avatar: user.avatar });
+    res.json({ profile: (0, helper_1.formatProfile)(user) });
 });
 exports.updateProfile = updateProfile;

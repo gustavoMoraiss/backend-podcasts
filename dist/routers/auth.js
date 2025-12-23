@@ -17,6 +17,7 @@ authRouter.post("/forget-password", user_1.generateForgetPasswordLink);
 authRouter.post("/verify-pass-reset-token", (0, validator_1.validate)(validationSchema_1.TokenAndIdValidationSchema), auth_1.isValidPassResetToken, user_1.grantValid);
 authRouter.post("/update-password", (0, validator_1.validate)(validationSchema_1.UpdatePasswordSchema), auth_1.isValidPassResetToken, user_1.updatePassword);
 authRouter.post("/sign-in", (0, validator_1.validate)(validationSchema_1.EmailValidationSchema), user_1.signIn);
-authRouter.post("/is-auth", auth_1.mustAuth, user_1.signIn);
+authRouter.get("/is-auth", auth_1.mustAuth, user_1.sendProfile);
 authRouter.post("/update-profile", auth_1.mustAuth, fileParser_1.default, user_1.updateProfile);
+authRouter.post("/log-out", auth_1.mustAuth, user_1.logout);
 exports.default = authRouter;

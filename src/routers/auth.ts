@@ -8,6 +8,7 @@ import {
   signIn,
   updateProfile,
   sendProfile,
+  logout,
 } from "#/controllers/user";
 import { isValidPassResetToken, mustAuth } from "#/middleware/auth";
 import { validate } from "#/middleware/validator";
@@ -45,5 +46,6 @@ authRouter.post(
 authRouter.post("/sign-in", validate(EmailValidationSchema), signIn);
 authRouter.get("/is-auth", mustAuth, sendProfile);
 authRouter.post("/update-profile", mustAuth, fileParser, updateProfile);
+authRouter.post("/log-out", mustAuth, logout);
 
 export default authRouter;

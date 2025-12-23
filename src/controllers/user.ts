@@ -188,6 +188,21 @@ export const sendProfile: RequestHandler = async (req, res) => {
   });
 };
 
+export const logout: RequestHandler = async (req, res) => {
+  const { fromAll } = req.query;
+  const token = req.token;
+
+  const user = await User.findById(req.user.id);
+
+  if (!user) throw new Error("something went worng, user not found.");
+
+  if (fromAll === "yes") user.tokens = [];
+  else user.tokens = user.tokens.filter((t) => t !== token);
+
+  await user.save();
+  res.json({ success: true });
+};
+
 export const updateProfile: RequestHandler = async (
   req: RequestWithFiles,
   res
