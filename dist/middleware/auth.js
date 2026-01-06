@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mustAuth = exports.isValidPassResetToken = void 0;
+exports.isVerified = exports.mustAuth = exports.isValidPassResetToken = void 0;
 const passwordResetToken_1 = __importDefault(require("../models/passwordResetToken"));
 const user_1 = __importDefault(require("../models/user"));
 const variables_1 = require("../utils/variables");
@@ -60,3 +60,14 @@ const mustAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     next();
 });
 exports.mustAuth = mustAuth;
+const isVerified = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
+    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.id;
+    const user = yield user_1.default.findById(userId);
+    if (!(user === null || user === void 0 ? void 0 : user.verified))
+        return res.status(403).json({
+            error: "Please verify your email to perform this action.",
+        });
+    next();
+});
+exports.isVerified = isVerified;

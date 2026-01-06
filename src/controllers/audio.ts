@@ -1,8 +1,66 @@
+import { RequestWithFiles } from "#/middleware/fileParser";
+import { categoriesTypes } from "#/utils/audio_category";
 import { RequestHandler } from "express-serve-static-core";
+import formidable from "formidable";
+import cloudinary from "#/cloud";
+import Audio from "#/models/audio";
 
-const createAudio: RequestHandler = (req, res) => {
-  // Implementation for creating audio
-  res.status(201).send({ message: "Audio created successfully" });
+interface CreateAudioRequest extends RequestWithFiles {
+  body: {
+    title: string;
+    about: string;
+    category: categoriesTypes;
+  };
+}
+
+const createAudio: RequestHandler = async (req: CreateAudioRequest, res) => {
+  const { title, about, category } = req.body;
+  const poster = req.files?.poster as formidable.File;
+  const audioFile = req.files?.audio as formidable.File;
+  const ownerId = req.user.id;
+
+  if (!audioFile)
+    return res.status(422).json({ error: "Audio file is required" });
+  try {
+    const audioRes = await cloudinary.uploader.upload(audioFile.filepath, {
+      resource_type: "video",
+    });
+
+    const newAudio = new Audio({
+      title,
+      about,
+      ownerId,
+      category,
+      file: {
+        url: audioRes.url,
+        publicId: audioRes.public_id,
+      },
+    });
+
+    if (poster) {
+      const posterRes = await cloudinary.uploader.upload(poster.filepath, {
+        width: 300,
+        height: 300,
+        crop: "thumb",
+        gravity: "face",
+      });
+
+      newAudio.poster = { url: posterRes.url, publicId: posterRes.public_id };
+    }
+
+    res.status(201).send({
+      audio: {
+        title,
+        about,
+        file: newAudio.file.url,
+        poster: newAudio.poster?.url,
+      },
+    });
+
+    await newAudio.save();
+  } catch (error) {
+    return res.status(500).json({ error: error });
+  }
 };
 
 export { createAudio };

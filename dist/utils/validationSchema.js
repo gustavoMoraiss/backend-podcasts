@@ -23,34 +23,72 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EmailValidationSchema = exports.UpdatePasswordSchema = exports.TokenAndIdValidationSchema = exports.CreateuserSchema = void 0;
+exports.AudioValidationSchema = exports.SignInValidationSchema = exports.UpdatePasswordSchema = exports.TokenAndIdValidationSchema = exports.CreateuserSchema = void 0;
 const yup = __importStar(require("yup"));
 const mongoose_1 = require("mongoose");
+const audio_category_1 = require("./audio_category");
 exports.CreateuserSchema = yup.object().shape({
-    name: yup.string().trim().required("Name is missing or blank.").min(3, "Name is too short or invalid.").max(25, "Name is too long."),
-    email: yup.string().required("Email is missing or blank.").email("invalid email ID."),
-    password: yup.string().required("Password is missing or blank").min(8, "Password is too short.").matches(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#\$%\^&\*])[a-zA-Z\d!@#\$%\^&\*]+$/, "Password is too simple")
+    name: yup
+        .string()
+        .trim()
+        .required("Name is missing or blank.")
+        .min(3, "Name is too short or invalid.")
+        .max(25, "Name is too long."),
+    email: yup
+        .string()
+        .required("Email is missing or blank.")
+        .email("invalid email ID."),
+    password: yup
+        .string()
+        .required("Password is missing or blank")
+        .min(8, "Password is too short.")
+        .matches(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#\$%\^&\*])[a-zA-Z\d!@#\$%\^&\*]+$/, "Password is too simple"),
 });
 exports.TokenAndIdValidationSchema = yup.object().shape({
     token: yup.string().trim().required("Invalid token."),
-    userId: yup.string().transform(function (value) {
+    userId: yup
+        .string()
+        .transform(function (value) {
         if (this.isType(value) && (0, mongoose_1.isValidObjectId)(value)) {
             return value;
         }
         return "";
-    }).required("Invalid userId.")
+    })
+        .required("Invalid userId."),
 });
 exports.UpdatePasswordSchema = yup.object().shape({
     token: yup.string().trim().required("Invalid token."),
-    password: yup.string().required("Password is missing or blank").min(8, "Password is too short.").matches(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#\$%\^&\*])[a-zA-Z\d!@#\$%\^&\*]+$/, "Password is too simple"),
-    userId: yup.string().transform(function (value) {
+    password: yup
+        .string()
+        .required("Password is missing or blank")
+        .min(8, "Password is too short.")
+        .matches(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#\$%\^&\*])[a-zA-Z\d!@#\$%\^&\*]+$/, "Password is too simple"),
+    userId: yup
+        .string()
+        .transform(function (value) {
         if (this.isType(value) && (0, mongoose_1.isValidObjectId)(value)) {
             return value;
         }
         return "";
-    }).required("Invalid userId.")
+    })
+        .required("Invalid userId."),
 });
-exports.EmailValidationSchema = yup.object().shape({
-    email: yup.string().required("Email is missing or blank.").email("invalid email ID."),
-    password: yup.string().trim().required("Password is missing or blank")
+exports.SignInValidationSchema = yup.object().shape({
+    email: yup
+        .string()
+        .required("Email is missing or blank.")
+        .email("invalid email ID."),
+    password: yup.string().trim().required("Password is missing or blank"),
+});
+exports.AudioValidationSchema = yup.object().shape({
+    title: yup
+        .string()
+        .required("Title is missing or blank.")
+        .email("invalid email ID."),
+    about: yup.string().trim().required("About is missing or blank"),
+    category: yup
+        .string()
+        .trim()
+        .oneOf(audio_category_1.categories, "Invalid category")
+        .required("Category is missing or blank"),
 });

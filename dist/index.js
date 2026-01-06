@@ -7,11 +7,13 @@ const express_1 = __importDefault(require("express"));
 require("dotenv/config");
 require("./db");
 const auth_1 = __importDefault(require("./routers/auth"));
+const audio_1 = __importDefault(require("./routers/audio"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: false }));
-app.use(express_1.default.static('src/public'));
+app.use(express_1.default.static("src/public"));
 app.use("/auth", auth_1.default);
+app.use("/audio", audio_1.default);
 const PORT = process.env.PORT || 8989;
 app.listen(PORT, () => {
     console.log("PORT is listening on port: " + PORT);
