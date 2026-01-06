@@ -16,7 +16,7 @@ import {
   CreateuserSchema,
   TokenAndIdValidationSchema,
   UpdatePasswordSchema,
-  EmailValidationSchema,
+  SignInValidationSchema,
 } from "#/utils/validationSchema";
 import { Router } from "express";
 import fileParser, { RequestWithFiles } from "#/middleware/fileParser";
@@ -43,7 +43,7 @@ authRouter.post(
   isValidPassResetToken,
   updatePassword
 );
-authRouter.post("/sign-in", validate(EmailValidationSchema), signIn);
+authRouter.post("/sign-in", validate(SignInValidationSchema), signIn);
 authRouter.get("/is-auth", mustAuth, sendProfile);
 authRouter.post("/update-profile", mustAuth, fileParser, updateProfile);
 authRouter.post("/log-out", mustAuth, logout);
